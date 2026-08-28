@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'galeria',
 ]
 
 MIDDLEWARE = [
@@ -57,7 +58,7 @@ ROOT_URLCONF = 'setup.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -118,6 +119,14 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
 
 STATIC_URL = 'static/'
+
+# Diretório onde o Django procura os arquivos estáticos durante o desenvolvimento:
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'setup/static')
+]
+
+# Diretório onde os arquivos serão coletados em produção (collectstatic):
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 
 # Email
