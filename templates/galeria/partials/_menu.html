@@ -1,25 +1,31 @@
 {% load static %}
 <div class="pagina-inicial">
     <header class="cabecalho">
+        {% for message in messages %}
+            <div style="display: inline-flex; align-items: center; gap: 12px; background-color: #071D3A; border: 2px solid #00FF88; box-shadow: 0 0 15px rgba(0, 255, 136, 0.4); border-radius: 10px; padding: 12px 20px; margin: 1.5rem 0;">
+                <span style="background-color: #00FF88; color: #041833; font-weight: bold; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; box-shadow: 0 0 10px #00FF88; flex-shrink: 0;">✓</span>
+                <span style="color: #FFFFFF; font-size: 1rem; font-weight: 600; font-family: 'Space Grotesk', sans-serif;">{{ message }}</span>
+            </div>
+        {% endfor %}
         <img src="{% static 'assets/logo/Logo(2).png' %}" alt="Logo da Alura Space" />
         <div class="cabecalho__busca">
             <div class="busca__fundo">
-                <form action="{% url 'buscar' %}">  
+                <form action="{% url 'buscar' %}">
                     <input class="busca__input" type="text" name="buscar" placeholder="O que você procura?">
                     <button type="submit">
-                        <img class="busca__icone" src="{% static 'assets/ícones/1x/search.png' %}" alt="ícone de search">
+                        <img class="busca__icone" src="{% static 'assets/icones/1x/search.png' %}" alt="ícone de search">
                     </button>
-                </form>    
+                </form>
             </div>
         </div>
     </header>
     <main class="principal">
         <section class="menu-lateral">
             <nav class="menu-lateral__navegacao">
-                <a href="{% url 'index' %}"><img src="{% static 'assets/ícones/1x/Home - ativo.png' %}"> Home</a>
-                <a href="#"><img src="{% static 'assets/ícones/1x/Mais vistas - inativo.png' %}"> Mais vistas</a>
-                <a href="#"><img src="{% static 'assets/ícones/1x/Novas - inativo.png' %}"> Novas</a>
-                <a href="#"><img src="{% static 'assets/ícones/1x/Surpreenda-me - inativo.png' %}"> Surpreenda-me</a>
+                <a href="{% url 'index' %}"><img src="{% static 'assets/icones/1x/Home - ativo.png' %}" alt="Ícone Home"> Home</a>
+                <a href="{% url 'login' %}"><img src="{% static 'assets/icones/1x/Mais vistas - inativo.png' %}" alt="Ícone Login"> Login</a>
+                <a href="{% url 'cadastro' %}"><img src="{% static 'assets/icones/1x/Novas - inativo.png' %}" alt="Ícone Cadastro"> Cadastro</a>
+                <a href="#"><img src="{% static 'assets/icones/1x/Surpreenda-me - inativo.png' %}" alt="Ícone Surpreenda-me"> Surpreenda-me</a>
             </nav>
         </section>
     </main>
