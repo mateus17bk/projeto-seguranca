@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django import forms
-from galeria.models import Fotografia
+from apps.galeria.models import Fotografia
 
 
 class FotografiaForm(forms.ModelForm):
@@ -16,8 +16,8 @@ class ListandoFotografias(admin.ModelAdmin):
     list_display = ("id", "nome", "legenda", "publicada", "data_fotografia")
     list_display_links = ("id", "nome")
     search_fields = ("nome",)
-    list_filter = ("categoria", "publicada", "data_fotografia")
-    list_per_page = 1
+    list_filter = ("categoria", "publicada", "data_fotografia", "usuario")
+    list_per_page = 10
     form = FotografiaForm
 
 
