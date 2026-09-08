@@ -16,7 +16,7 @@ class Fotografia(models.Model):
     categoria = models.CharField(max_length=100, choices=OPECOES_CATEGORIA, default="")
     descricao = models.TextField(null=False, blank=False)
     foto = models.ImageField(upload_to="fotos/%Y/%m/%d/", blank=False, null=False)
-    publicada = models.BooleanField(default=False)
+    publicada = models.BooleanField(default=True)
     data_fotografia = models.DateTimeField(default=datetime.now, blank=False)
     usuario = models.ForeignKey(to=User, on_delete=models.SET_NULL, null=True, blank=False, related_name="user")
 

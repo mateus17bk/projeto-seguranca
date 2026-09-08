@@ -3,7 +3,7 @@
 {% block content %}
 
 <section class="galeria" style="margin-left: 5em; width: 100%;">
-    <form action="{% url 'nova_imagem' %}" method="POST" enctype="multipart/form-data">
+    <form action="{% url 'editar_imagem' foto_id %}" method="POST" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="row">
             {% for field in form.visible_fields %}
@@ -21,7 +21,7 @@
             {% endfor %}
         </div>
         <div>
-           <button class="btn btn-success col-12" style="padding-top: 8px; padding-bottom: 8px; cursor: pointer;" type="submit">Cadastrar Nova Imagem</button>
+           <button class="btn btn-success col-12" style="padding-top: 8px; padding-bottom: 8px; cursor: pointer;" type="submit">Editar Imagem</button>
         </div>
     </form>
 </section>
