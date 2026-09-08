@@ -23,7 +23,7 @@ def buscar(request):
    termo_busca = request.GET.get("buscar") or request.GET.get("q", "")
    if termo_busca:
       fotografias = fotografias.filter(nome__icontains=termo_busca)
-   return render(request, "galeria/buscar.html", {"cards": fotografias, "termo_busca": termo_busca})
+   return render(request, "galeria/index.html", {"cards": fotografias, "termo_busca": termo_busca})
 
 def nova_imagem(request):
     if not request.user.is_authenticated:
@@ -69,3 +69,11 @@ def deletar_imagem(request, foto_id):
     fotografia.delete()
     messages.success(request, 'Fotografia deletada com sucesso!')
     return redirect('index')
+
+def filtro(request, categoria):
+    if not request.user.is_authenticated:
+        messages.error(request, 'Você precisa estar logado para acessar a galeria.')
+        return redirect('login')
+
+    fotografias = Fotografia.objects.filter(publicada=True, categoria=categoria).order_by("-data_fotografia")
+    return render(request, "galeria/index.html", {"cards": fotografias, "categoria": categoria})
