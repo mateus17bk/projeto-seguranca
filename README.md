@@ -1,4 +1,5 @@
 # 🌌 Alura Space - Galeria Espacial
+# Desenvolvido para Atividade de Avaliação - UNIDADES 1 e 2 - Projeto Aplicado a praticas de mercado
 
 Uma aplicação web desenvolvida em **Python** e **Django** para gerenciamento e exibição de fotografias do espaço, contando com sistema completo de autenticação de usuários, busca, filtragem e operações de **CRUD** (Criar, Ler, Atualizar e Deletar).
 
