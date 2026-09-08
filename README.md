@@ -1,28 +1,77 @@
 # 🌌 Alura Space - Galeria Espacial
+# Desenvolvido para Atividade de Avaliação - UNIDADES 1 e 2 - Projeto Aplicado a praticas de mercado
 
-Uma aplicação web desenvolvida em **Python** e **Django** para gerenciamento e exibição de fotografias do espaço, contando com sistema completo de autenticação de usuários, busca, filtragem e operações de **CRUD** (Criar, Ler, Atualizar e Deletar).
+Uma aplicação web desenvolvida em **Python** e **Django** para gerenciamento e exibição de fotografias astronômicas, projetada sob as práticas de desenvolvimento seguro (*Secure by Design* e *Secure by Default*), contendo autenticação de usuários, busca, filtragem e **CRUD completo** (Criar, Ler, Atualizar e Deletar).
 
 ---
 
-## 🚀 Funcionalidades
+## 🛡️ Segurança da Aplicação & Mitigações OWASP Top 10
 
-- **🔐 Autenticação de Usuários:**
-  - Cadastro de novos usuários com validação de dados e senhas.
-  - Login e Logout com mensagens de feedback.
-  - Controle de acesso e proteção de rotas (apenas usuários autenticados gerenciam e visualizam a galeria).
+Em conformidade com as diretrizes do **OWASP Top 10**, o projeto implementa defesas ativas contra as principais vulnerabilidades em aplicações web:
 
-- **🖼️ CRUD de Fotografias:**
-  - **Criar (Create):** Upload de novas imagens espaciais com título, legenda, categoria, descrição e data.
-  - **Visualizar (Read):** Visualização de cards na página inicial e página com detalhes completos da imagem.
-  - **Editar (Update):** Formulário para alteração de informações e substituição de foto.
-  - **Deletar (Delete):** Remoção de fotografias cadastradas.
+### 1. A01:2021 / 2025 – Broken Access Control (Controle de Acesso Quebrado & IDOR)
+* **Ameaça:** Acesso indevido a dados de outros usuários ou execução de operações privilegiadas sem autorização (ex.: manipulação de ID na URL para alterar/deletar fotos de terceiros via *Insecure Direct Object References - IDOR*).
+* **Onde foi aplicado:** `apps/galeria/views.py` e `apps/galeria/forms.py`.
+* **Como o código previne:**
+  - **Guarda de Autenticação:** Todas as *views* do CRUD e busca verificam `if not request.user.is_authenticated`, redirecionando usuários não autenticados imediatamente para o login com mensagem de erro.
+  - **Validação de Propriedade (Prevenção de IDOR):** Nas funções `editar_imagem` e `deletar_imagem`, o código valida explicitamente se o registro pertence ao usuário autenticado:
+    ```python
+    if fotografia.usuario != request.user and not request.user.is_staff:
+        messages.error(request, 'Acesso negado: Você não tem permissão.')
+        return redirect('index')
+    ```
+  - **Blindagem de Formulários:** O campo `usuario` é excluído do `FotografiaForms`, sendo injetado exclusivamente pelo servidor no momento do salvamento (`fotografia.usuario = request.user`), impossibilitando a falsificação de autoria via payload HTTP.
+
+---
+
+### 2. A03:2021 / 2025 – Injection (Injeção de SQL e XSS)
+* **Ameaça:** Manipulação de comandos no banco de dados via parâmetros de busca/formulários (*SQL Injection*) ou injeção de scripts maliciosos nos campos de texto para execução no navegador da vítima (*Cross-Site Scripting - XSS*).
+* **Onde foi aplicado:** `apps/galeria/views.py` (consultas ORM) e `templates/` (templates Django).
+* **Como o código previne:**
+  - **Prevenção de SQLi:** Utilização estrita do **Django ORM** com *Prepared Statements* (consultas parametrizadas) em operações como `Fotografia.objects.filter(...)` e `get_object_or_404(...)`. Não há concatenação direta de strings em comandos SQL.
+  - **Prevenção de XSS:** O motor de templates do Django executa *Contextual Auto-Escaping* por padrão em todas as variáveis (`{{ fotografia.nome }}`, `{{ fotografia.descricao }}`), convertendo caracteres como `<`, `>`, `&` e `"` em entidades HTML seguras, impedindo a injeção e execução de scripts arbitrários.
+
+---
+
+### 3. A02 / A07:2021 / 2025 – Identification & Authentication Failures (Falhas de Autenticação e Criptografia)
+* **Ameaça:** Armazenamento de credenciais em texto claro, senhas fracas suscetíveis a ataques de dicionário e interceptação/sequestro de sessões ativas.
+* **Onde foi aplicado:** `apps/usuarios/views.py`, `apps/usuarios/forms.py`, `setup/settings.py` e `.env`.
+* **Como o código previne:**
+  - **Hash Seguro de Senhas:** As senhas dos usuários são criptografadas utilizando o algoritmo **PBKDF2 com HMAC SHA-256 e Salt dinâmico** através do método `User.objects.create_user()`, garantindo que senhas nunca sejam armazenadas em texto plano.
+  - **Validação de Credenciais:** O `CadastroForm` valida o formato do nome de usuário, obrigatoriedade de campos e confirmação de senha idêntica (`clean_senha_2`).
+  - **Isolamento de Segredos:** A chave criptográfica mestra (`SECRET_KEY`) é isolada em variáveis de ambiente (`.env`), com `.gitignore` estrito para evitar vazamento em repositórios públicos.
+  - **Proteção de Cookies:** Flags `SESSION_COOKIE_HTTPONLY = True` e `CSRF_COOKIE_HTTPONLY = True` ativadas no `settings.py`, impedindo o roubo de sessões via scripts JavaScript.
+
+---
+
+### 4. A05:2021 / 2025 – Security Misconfiguration & CSRF
+* **Ameaça:** Ataques de *Cross-Site Request Forgery* (CSRF), onde ações indesejadas são executadas em nome do usuário autenticado, e ataques de *Clickjacking*.
+* **Onde foi aplicado:** `templates/` (todos os formulários POST) e `setup/settings.py`.
+* **Como o código previne:**
+  - **Tokens CSRF:** Todos os formulários `POST` contêm a tag `{% csrf_token %}` obrigatória, validada pelo middleware `django.middleware.csrf.CsrfViewMiddleware`.
+  - **Anti-Clickjacking:** Configuração de cabeçalho `X_FRAME_OPTIONS = 'DENY'` para impedir o carregamento do sistema em frames/iframes maliciosos.
+
+---
+
+## 🚀 Funcionalidades da Aplicação
+
+- **🔐 Autenticação Completa:**
+  - Cadastro com validação de dados e hashing seguro de senhas.
+  - Login e Logout com mensagens de feedback contextual.
+  - Proteção de rotas em nível de middleware e controller.
+
+- **🖼️ CRUD Completo de Fotografias:**
+  - **Criar (Create):** Upload de novas imagens com título, legenda, categoria, descrição e data.
+  - **Visualizar (Read):** Galeria responsiva e página com detalhes completos da imagem.
+  - **Editar (Update):** Alteração de metadados e substituição da foto (restrito ao autor).
+  - **Deletar (Delete):** Remoção de fotografias (restrito ao autor).
 
 - **🔍 Busca e Filtros:**
-  - Campo de busca por nome da fotografia.
-  - Filtros rápidos por categorias: *Nebulosa*, *Estrela*, *Galáxia* e *Planeta*.
+  - Busca textual por nome de fotografia.
+  - Filtros categorizados: *Nebulosa*, *Estrela*, *Galáxia* e *Planeta*.
 
-- **💬 Mensagens e Notificações:**
-  - Alertas interativos de sucesso, erro e atenção utilizando o sistema `django.contrib.messages`.
+- **💬 Alertas e Notificações:**
+  - Sistema de mensagens dinâmicas de sucesso, erro e aviso (`django.contrib.messages`).
 
 ---
 
@@ -32,22 +81,19 @@ Uma aplicação web desenvolvida em **Python** e **Django** para gerenciamento e
 - **[Django](https://www.djangoproject.com/)** (v6.1)
 - **[Pillow](https://python-pillow.org/)** (Processamento e upload de imagens)
 - **[python-dotenv](https://github.com/theskumar/python-dotenv)** (Gerenciamento de variáveis de ambiente)
-- **[SQLite3](https://www.sqlite.org/)** (Banco de dados padrão)
+- **[SQLite3](https://www.sqlite.org/)** (Banco de dados relacional padrão)
 - **HTML5 & CSS3** (Layout responsivo personalizado)
 
 ---
 
 ## 📋 Pré-requisitos
 
-Antes de começar, certifique-se de ter instalado em sua máquina:
 - [Git](https://git-scm.com/)
-- [Python 3](https://www.python.org/downloads/) (recomendado versão 3.10 ou superior)
+- [Python 3](https://www.python.org/downloads/) (versão 3.10 ou superior)
 
 ---
 
 ## ⚙️ Como Executar o Projeto Localmente
-
-Siga o passo a passo abaixo para rodar o projeto em sua máquina:
 
 ### 1. Clonar o repositório
 ```bash
@@ -69,10 +115,7 @@ cd NOME-DO-REPOSITORIO
   source venv/bin/activate
   ```
 
-> *Dica:* Quando o ambiente virtual estiver ativo, você verá `(venv)` no início da linha de comando do terminal.
-
 ### 3. Instalar as dependências
-Com o ambiente virtual ativado, instale os pacotes necessários:
 ```bash
 pip install -r requirements.txt
 ```
@@ -80,86 +123,76 @@ pip install -r requirements.txt
 ### 4. Configurar as variáveis de ambiente
 Crie um arquivo `.env` na raiz do projeto (onde está o arquivo `manage.py`):
 
-- **No Windows (PowerShell):**
+- **No Windows:**
   ```powershell
   copy .env.example .env
   ```
 
-- **No Linux / macOS / Bash:**
+- **No Linux / macOS:**
   ```bash
   cp .env.example .env
   ```
 
-Abra o arquivo `.env` criado e defina a sua `SECRET_KEY` (pode ser qualquer texto longo ou uma chave gerada pelo Django):
+Abra o `.env` e defina a sua chave:
 ```env
 SECRET_KEY=django-insecure-sua-chave-secreta-aqui
 ```
 
 ### 5. Executar as migrações do banco de dados
-Crie a estrutura das tabelas no banco de dados SQLite:
 ```bash
 python manage.py migrate
 ```
 
-### 6. (Opcional) Criar um Superusuário (Admin)
-Caso queira acessar o painel administrativo do Django (`/admin`):
+### 6. (Opcional) Criar um Superusuário Administrador
 ```bash
 python manage.py createsuperuser
 ```
-Informe nome de usuário, e-mail e senha conforme solicitado no terminal.
 
 ### 7. Iniciar o servidor de desenvolvimento
 ```bash
 python manage.py runserver
 ```
 
-Agora acesse no seu navegador:
-👉 **[http://127.0.0.1:8000/](http://127.0.0.1:8000/)**
+Acesse no seu navegador: 👉 **[http://127.0.0.1:8000/](http://127.0.0.1:8000/)**
 
 ---
 
-## 📂 Estrutura de Pastas
+## 📂 Estrutura do Projeto
 
 ```text
 ├── apps/
-│   ├── galeria/       # App responsável pelas fotografias, filtros e CRUD
-│   └── usuarios/      # App responsável pela autenticação (login, cadastro, logout)
-├── media/             # Armazenamento de uploads de fotos feitos pelos usuários
-├── setup/             # Configurações globais do Django (settings, urls, static)
+│   ├── galeria/       # Gestão de fotografias, filtros e operações CRUD
+│   └── usuarios/      # Módulo de autenticação (login, cadastro, logout)
+├── media/             # Armazenamento de uploads de fotos
+├── setup/             # Configurações centrais do Django (settings, urls, static)
 ├── static/            # Arquivos estáticos coletados
-├── templates/         # Arquivos de templates HTML (Django Templates)
-├── .env.example       # Exemplo de arquivo de variáveis de ambiente
-├── .gitignore         # Arquivos ignorados pelo Git
+├── templates/         # Templates HTML (Django Template Engine)
+├── .env.example       # Modelo de variáveis de ambiente
+├── .gitignore         # Regras de exclusão do controle de versão
 ├── manage.py          # Utilitário de linha de comando do Django
 ├── requirements.txt   # Dependências do projeto
-└── README.md          # Documentação do projeto
+└── README.md          # Documentação técnica e relatório de segurança
 ```
 
 ---
 
-## 📌 Rotas Principais da Aplicação
+## 📌 Rotas da Aplicação
 
-| Rota | Descrição |
-| :--- | :--- |
-| `/` | Página inicial com a galeria de imagens |
-| `/imagem/<id>/` | Página de detalhes de uma fotografia |
-| `/nova-imagem/` | Formulário para adicionar uma nova imagem |
-| `/editar-imagem/<id>/` | Formulário para editar uma fotografia existente |
-| `/deletar-imagem/<id>/` | Ação para remover uma fotografia |
-| `/buscar/` | Busca de fotografias por nome |
-| `/login/` | Página de autenticação de usuário |
-| `/cadastro/` | Página de registro de novo usuário |
-| `/logout/` | Encerra a sessão do usuário conectado |
-| `/admin/` | Painel administrativo do Django |
-
----
-
-## 💡 Dicas de Uso
-
-1. **Primeiro Acesso:** Crie uma conta na tela de [Cadastro](/cadastro/) ou use a conta de superusuário.
-2. **Adicionar Imagens:** Após logar, clique em **"Nova imagem"** no menu lateral para cadastrar suas fotos espaciais.
-3. **Gerenciar:** Ao clicar em uma imagem na galeria, utilize os botões **"Editar Imagem"** e **"Deletar Imagem"** para atualizá-la ou excluí-la.
+| Rota | Descrição | Requer Autenticação |
+| :--- | :--- | :---: |
+| `/` | Galeria principal de fotografias | Sim |
+| `/imagem/<id>/` | Visualização detalhada de uma fotografia | Sim |
+| `/nova-imagem/` | Cadastro e upload de nova fotografia | Sim |
+| `/editar-imagem/<id>/` | Edição de fotografia existente | Sim (Apenas Autor) |
+| `/deletar-imagem/<id>/` | Exclusão de fotografia | Sim (Apenas Autor) |
+| `/buscar/` | Busca textual por nome | Sim |
+| `/login/` | Autenticação de usuário | Não |
+| `/cadastro/` | Registro de novos usuários | Não |
+| `/logout/` | Encerramento de sessão | Sim |
+| `/admin/` | Painel administrativo do Django | Sim (Staff) |
 
 ---
 
-Feito com 💜 por você! Sinta-se à vontade para contribuir com melhorias.
+## 🤖 Desenvolvimento com Inteligência Artificial
+
+Em conformidade com as diretrizes do projeto aplicado, a arquitetura, auditoria de segurança (OWASP) e documentação foram desenvolvidas e revisadas com assistência de Inteligência Artificial via IDE Antigravity / Claude Code.
