@@ -193,6 +193,4 @@ Acesse no seu navegador: 👉 **[http://127.0.0.1:8000/](http://127.0.0.1:8000/)
 
 ---
 
-## 🤖 Desenvolvimento com Inteligência Artificial
 
-Em conformidade com as diretrizes do projeto aplicado, a arquitetura, auditoria de segurança (OWASP) e documentação foram desenvolvidas e revisadas com assistência de Inteligência Artificial via IDE Antigravity / Claude Code.
