@@ -28,7 +28,7 @@ SECRET_KEY = str(os.getenv('SECRET_KEY'))
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['163.176.148.137', 'localhost']
+ALLOWED_HOSTS = ['163.176.148.137', 'projeto-seguranca.duckdns.org', 'localhost', '127.0.0.1', '*']
 
 
 # Application definition
@@ -142,3 +142,4 @@ MAILERS = {
         'BACKEND': 'django.core.mail.backends.console.EmailBackend',
     },
 }
+CSRF_TRUSTED_ORIGINS = ['https://projeto-seguranca.duckdns.org', 'http://projeto-seguranca.duckdns.org']
