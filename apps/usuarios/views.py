@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib import messages 
 import requests
+import os
 
 def login(request):
     form = LoginForm(request.POST or None)
@@ -30,7 +31,7 @@ def cadastro(request):
     if request.method == 'POST':
         form = CadastroForm(request.POST)
         captcha_response = request.POST.get('g-recaptcha-response')
-        secret_key = '6LdeP7YtAAAAALkhLQB_1KQ1ItJWa516sYyUnD1u'
+        secret_key = os.getenv("RECAPTCHA_SECRET_KEY")
         verification_url = 'https://www.google.com/recaptcha/api/siteverify'
 
         payload = {
