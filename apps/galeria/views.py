@@ -48,6 +48,11 @@ def editar_imagem(request, foto_id):
         return redirect('login')
 
     fotografia = get_object_or_404(Fotografia, pk=foto_id)
+
+    if fotografia.usuario != request.user:
+        messages.error(request, 'Você não tem permissão para editar esta imagem!')
+        return redirect('index')
+
     form = FotografiaForms(instance=fotografia)
 
     if request.method == 'POST':
@@ -66,7 +71,13 @@ def deletar_imagem(request, foto_id):
         return redirect('login')
 
     fotografia = get_object_or_404(Fotografia, pk=foto_id)
+
+    if fotografia.usuario != request.user:
+        messages.error(request, 'Você não tem permissão para deletar esta imagem!')
+        return redirect('index')
+
     fotografia.delete()
+
     messages.success(request, 'Fotografia deletada com sucesso!')
     return redirect('index')
 

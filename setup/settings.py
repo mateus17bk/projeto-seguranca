@@ -26,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = str(os.getenv('SECRET_KEY'))
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['163.176.148.137', 'projeto-seguranca.duckdns.org', 'localhost', '127.0.0.1', '*']
 
@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'apps.galeria.apps.GaleriaConfig',
     'apps.usuarios.apps.UsuariosConfig',
+    'axes',
 ]
 
 MIDDLEWARE = [
@@ -52,6 +53,13 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'axes.middleware.AxesMiddleware',
+    
+]
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'axes.backends.AxesStandaloneBackend', 
 ]
 
 ROOT_URLCONF = 'setup.urls'
@@ -123,11 +131,12 @@ STATIC_URL = 'static/'
 
 # Diretório onde o Django procura os arquivos estáticos durante o desenvolvimento:
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'setup/static')
+    os.path.join(BASE_DIR, 'static'),
+    os.path.join(BASE_DIR, 'setup/static'),
 ]
 
 # Diretório onde os arquivos serão coletados em produção (collectstatic):
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

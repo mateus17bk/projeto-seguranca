@@ -4,6 +4,7 @@ from apps.usuarios.forms import LoginForm, CadastroForm
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib import messages 
+import requests
 
 def login(request):
     form = LoginForm(request.POST or None)
@@ -28,7 +29,28 @@ def cadastro(request):
     form = CadastroForm()
     if request.method == 'POST':
         form = CadastroForm(request.POST)
+        captcha_response = request.POST.get('g-recaptcha-response')
+        secret_key = '6LdeP7YtAAAAALkhLQB_1KQ1ItJWa516sYyUnD1u'
+        verification_url = 'https://www.google.com/recaptcha/api/siteverify'
 
+        payload = {
+            'secret': secret_key, 
+            'response': captcha_response,
+        }
+
+        try:
+            response = requests.post(verification_url, data=payload)
+            result = response.json()
+            print(f"DEBUG CAPTCHA: Resposta do Google: {result}")
+            is_human = result.get('success', False)
+        except Exception as e:
+            print(f"DEBUG CAPTCHA: Erro na requisição: {e}")
+
+            is_human = False
+        if not is_human:
+            messages.error(request, 'Por favor, confirme que você não é um robô.')
+            return render(request, 'usuarios/cadastro.html', {"form": form})
+    
         if form.is_valid():
             
             nome = form.cleaned_data['nome_cadastro']
@@ -50,3 +72,4 @@ def logout(request):
     auth_logout(request)
     messages.success(request, 'Logout realizado com sucesso!')
     return redirect('login')
+

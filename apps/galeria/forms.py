@@ -4,7 +4,7 @@ from apps.galeria.models import Fotografia
 class FotografiaForms(forms.ModelForm):
     class Meta:
         model = Fotografia
-        exclude = ['publicada']
+        exclude = ['publicada','usuario']
         labels = {
             'nome': 'Nome da Fotografia',
             'legenda': 'Legenda',
@@ -24,5 +24,13 @@ class FotografiaForms(forms.ModelForm):
                 format='%Y-%m-%d',
                 attrs={'class': 'form-control', 'type': 'date'}),
             'usuario': forms.Select(attrs={'class': 'form-control'}),
-
         }
+
+    def clean_foto(self):
+        foto = self.cleaned_data.get('foto')
+        if foto:
+            # Camada 1: White-list de extensões permitidas
+            extensoes_permitidas = ['.jpg', '.jpeg', '.png', '.webp']
+            if not foto.name.lower().endswith(tuple(extensoes_permitidas)):
+                raise forms.ValidationError("Tipo de arquivo não permitido. Por favor, envie apenas imagens (.jpg, .jpeg, .png, .webp)")
+        return foto

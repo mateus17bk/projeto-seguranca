@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /usuarios/
+Disallow: /galeria/editar/
+Disallow: /galeria/deletar/
